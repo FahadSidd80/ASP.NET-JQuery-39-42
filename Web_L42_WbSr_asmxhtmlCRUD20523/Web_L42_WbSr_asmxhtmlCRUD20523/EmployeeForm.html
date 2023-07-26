@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="jquery.js"></script>
+    <script type="text/javascript">
+        var IDD = 0;
+        $(document).ready(function () {
+            GetData();
+        });
+
+        function clear() {
+            $("#txtname").val("");
+            $("#txtaddress").val("");
+            $("#txtage").val("");
+            $("#btnsave").val("Save");
+            IDD = 0;
+        }
+
+        function SaveData() {
+            if ($("#btnsave").val()=="Save") {
+                $.ajax({
+                    url: 'EmployeeServices.asmx/Insert',
+                    type: 'post',
+                    contentType: 'application/json;charset=utf-8',
+                    dataType: 'json',
+                    data: "{name : '" + $("#txtname").val() + "',address : '" + $("#txtaddress").val() + "',age: '" + $("#txtage").val() + "'}",
+                    success: function () {
+                        GetData();
+                        //alert('data saved succesfully !!');
+                        clear();
+                    },
+                    error: function () {
+                        alert('Data not saved !!');
+                    }
+                });
+            } else {
+                $.ajax({
+                    url: 'EmployeeServices.asmx/Update',
+                    type: 'post',
+                    contentType: 'application/json;charset=utf-8',
+                    dataType: 'json',
+                    data: "{empid: '" + IDD + "',name : '" + $("#txtname").val() + "',address : '" + $("#txtaddress").val() + "',age: '" + $("#txtage").val() + "'}",
+                    success: function () {
+                        GetData();
+                        //alert('data updated succesfully !!');
+                        clear();
+                    },
+                    error: function () {
+                        alert('Data not updated !!');
+                    }
+                });
+            }
+           
+        }
+
+        function GetData() {
+            $.ajax({
+                url: 'EmployeeServices.asmx/Display',
+                type: 'post',
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                data: "{}",
+                success: function (data) {
+                    data = JSON.parse(data.d);
+                    /*alert('data displayed succesfully !!');*/
+                    $("#tblgrid").find("tr:gt(0)").remove();
+                    for (var i = 0; i < data.length; i++) {
+                        $("#tblgrid").append('<tr> <td>' + data[i].empid + '</td> <td>' + data[i].name + '</td> <td>' + data[i].address + '</td> <td>' + data[i].age + '</td> <td><input type="button" id="btndelete" value="Delete" onclick="DeleteData(' + data[i].empid + ')" /></td>  <td><input type="button" id="btnedit" value="Edit" onclick="EditData(' + data[i].empid + ')" /></td> </tr>');
+                    }
+                },
+                error: function () {
+                    alert('Data not displayed !!');
+                }
+            });
+        }
+
+        function DeleteData(empid) {
+            if (confirm('are you sure you want to delete...!! ')) {
+                $.ajax({
+                    url: 'EmployeeServices.asmx/Delete',
+                    type: 'post',
+                    contentType: 'application/json;charset=utf-8',
+                    dataType: 'json',
+                    data: "{empid : '" + empid + "'}",
+                    success: function () {
+                        GetData();
+                        //alert('data deleted succesfully !!');
+                    },
+                    error: function () {
+                        alert('Data not deleted !!');
+                    }
+                });
+            }
+            
+        }
+
+        function EditData(empid) {
+            $.ajax({
+                url: 'EmployeeServices.asmx/Edit',
+                type: 'post',
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                data: "{empid : '" + empid + "'}",
+                success: function (data) {
+                    data = JSON.parse(data.d);
+                    /*alert('data displayed succesfully !!');*/
+                    $("#txtname").val(data[0].name);
+                    $("#txtaddress").val(data[0].address);
+                    $("#txtage").val(data[0].age);
+                    $("#btnsave").val("Update");
+                    IDD = empid;
+                },
+                error: function () {
+                    alert('Data not edited !!');
+                }
+            });
+        }
+    </script>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>Name:</td>
+            <td><input type="text" id="txtname" /></td>
+        </tr>
+        <tr>
+            <td>Address:</td>
+            <td><input type="text" id="txtaddress" /></td>
+        </tr>
+        <tr>
+            <td>Age:</td>
+            <td><input type="text" id="txtage" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="button" id="btnsave" value="Save" onclick="SaveData()" /></td>
+        </tr>
+    </table>
+    <table id="tblgrid" style="background-color:gray;color:white"width="600px" border="1">
+        <tr style="background-color:purple">
+            <th>Emp ID</th>  <th>Emp Name</th>  <th>Emp Address</th>  <th>Emp Age</th>  <th>Action</th> <th>Action</th>
+        </tr>
+    </table>
+
+</body>
+</html>
